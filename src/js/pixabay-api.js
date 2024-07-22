@@ -1,7 +1,3 @@
-import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
-import SimpleLightbox from "simplelightbox";
-import "simplelightbox/dist/simple-lightbox.min.css";
 import { imageTemplate } from './render-functions';
 
 const BASE_URL = 'https://pixabay.com/api/';
@@ -14,12 +10,9 @@ const options = {
   method: 'GET',
 };
 
-export function onClickSearch(inputValue) {
-  const galleryRef = document.querySelector('.gallery');
-  galleryRef.innerHTML = ''; 
-
-  fetch(
-    `${BASE_URL}?key=${API_KEY}&q=${inputValue}&image_type=${IMAGE_TYPE}&orientation=${ORIENTATION}&safesearch=${SAFESEARCH}`,
+export function fetchImages(query) {
+  return fetch(
+    `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=${IMAGE_TYPE}&orientation=${ORIENTATION}&safesearch=${SAFESEARCH}`,
     options
   )
     .then(response => {
@@ -28,30 +21,7 @@ export function onClickSearch(inputValue) {
       }
       return response.json();
     })
-    .then(data => {
-      if (data.hits.length === 0) {
-        iziToast.error({
-          title: 'Error',
-          message: 'Sorry, there are no images matching your search query. Please try again!',
-        });
-      } else {
-        data.hits.forEach(image => {
-          const imageMarkup = imageTemplate(image);
-          galleryRef.insertAdjacentHTML('beforeend', imageMarkup);
-        });
-        iziToast.success({
-          title: 'Success',
-          message: 'Here we are',
-        });
-        const lightbox = new SimpleLightbox('.gallery a');
-        lightbox.refresh();
-      }
-    })
     .catch(error => {
-      iziToast.error({
-        title: 'Error',
-        message: `Oooops ${error.message}`,
-      });
-      console.log(error);
+      throw new Error(`An error occurred: ${error.message}`);
     });
 }
